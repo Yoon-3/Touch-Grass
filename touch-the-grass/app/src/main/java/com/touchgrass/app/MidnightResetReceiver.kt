@@ -16,7 +16,7 @@ class MidnightResetReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                AppStateManager.setLocked(context, true)
+                AppStateManager.resetAllUsage(context)
                 val result = GeminiRepository.generateMission()
                 val mission = result.getOrElse { "Go outside and take a photo of the sky." }
                 AppStateManager.setMission(context, mission)

@@ -19,14 +19,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -128,7 +131,7 @@ class MainActivity : ComponentActivity() {
             )
 
             LazyColumn(modifier = Modifier.weight(1f)) {
-                items(allApps) { app ->
+                items(allApps, key = { it.packageName }) { app ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
@@ -144,7 +147,27 @@ class MainActivity : ComponentActivity() {
                                 AppStateManager.setBlockedApps(context, selectedApps)
                             }
                         )
-                        Text(app.label)
+                        Text(app.label, modifier = Modifier.weight(1f))
+                        if (selectedApps.contains(app.packageName)) {
+                            var minutesText by remember(app.packageName) {
+                                mutableStateOf(
+                                    AppStateManager.getTimeLimitMinutes(context, app.packageName).toString()
+                                )
+                            }
+                            OutlinedTextField(
+                                value = minutesText,
+                                onValueChange = { text ->
+                                    minutesText = text
+                                    text.toIntOrNull()?.takeIf { it > 0 }?.let {
+                                        AppStateManager.setTimeLimitMinutes(context, app.packageName, it)
+                                    }
+                                },
+                                label = { Text("min") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                enabled = !activated,
+                                modifier = Modifier.width(90.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -164,7 +187,7 @@ class MainActivity : ComponentActivity() {
                         val mission = result.getOrElse { "Go outside and take a photo of the sky." }
                         AppStateManager.setMission(context, mission)
                         AppStateManager.setLastResetDate(context, todayString())
-                        AppStateManager.setLocked(context, true)
+                        AppStateManager.resetAllUsage(context)
                         AppStateManager.setActivated(context, true)
                         AlarmScheduler.scheduleMidnightAlarm(context)
                         activated = true
@@ -181,7 +204,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
                         AppStateManager.setActivated(context, false)
-                        AppStateManager.setLocked(context, false)
                         activated = false
                         missionStatus = "Deactivated."
                     }

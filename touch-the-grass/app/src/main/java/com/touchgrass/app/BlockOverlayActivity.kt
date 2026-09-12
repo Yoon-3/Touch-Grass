@@ -17,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +37,10 @@ import java.io.File
  */
 class BlockOverlayActivity : ComponentActivity() {
 
+    companion object {
+        const val EXTRA_PACKAGE_NAME = "blocked_package_name"
+    }
+
     private var photoUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,16 +52,26 @@ class BlockOverlayActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
-                OverlayScreen(mission = AppStateManager.getMission(this))
+                OverlayScreen()
             }
         }
     }
 
     @Composable
-    private fun OverlayScreen(mission: String) {
+    private fun OverlayScreen() {
         val scope = rememberCoroutineScope()
+        var mission by remember { mutableStateOf(AppStateManager.getMission(this)) }
         var status by remember { mutableStateOf("") }
         var isChecking by remember { mutableStateOf(false) }
+
+        // Fetch a fresh mission from Gemini every time the block screen shows,
+        // instead of reusing the same one until the next midnight reset.
+        LaunchedEffect(Unit) {
+            GeminiRepository.generateMission().onSuccess { newMission ->
+                mission = newMission
+                AppStateManager.setMission(this@BlockOverlayActivity, newMission)
+            }
+        }
 
         val takePictureLauncher = rememberLauncherForActivityResult(
             ActivityResultContracts.TakePicture()
@@ -76,7 +91,10 @@ class BlockOverlayActivity : ComponentActivity() {
                     isChecking = false
                     result.onSuccess { approved ->
                         if (approved) {
-                            AppStateManager.setLocked(this@BlockOverlayActivity, false)
+                            val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
+                            if (packageName != null) {
+                                AppStateManager.resetUsage(this@BlockOverlayActivity, packageName)
+                            }
                             status = "Approved! Unlocking..."
                             finish()
                         } else {
