@@ -1,4 +1,4 @@
-# Touch the Grass
+# Touch Grass
 
 24-hour hackathon Android app. Blocks a set of chosen apps until the user
 completes a daily outdoor-photo mission generated and graded by the Gemini
