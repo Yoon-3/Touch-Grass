@@ -1,0 +1,6 @@
+C:\Users\MASAKI\Downloads\touch-the-grass\touch-the-grass\app\src\main\java\com\touchgrass\app\AppStateManager.kt
+C:\Users\MASAKI\Downloads\touch-the-grass\touch-the-grass\app\src\main\java\com\touchgrass\app\MainActivity.kt
+C:\Users\MASAKI\Downloads\touch-the-grass\touch-the-grass\app\src\main\java\com\touchgrass\app\TouchGrassAccessibilityService.kt
+C:\Users\MASAKI\Downloads\touch-the-grass\touch-the-grass\app\src\main\java\com\touchgrass\app\GeminiRepository.kt
+C:\Users\MASAKI\Downloads\touch-the-grass\touch-the-grass\app\src\main\java\com\touchgrass\app\MidnightResetReceiver.kt
+C:\Users\MASAKI\Downloads\touch-the-grass\touch-the-grass\app\src\main\java\com\touchgrass\app\BlockOverlayActivity.kt

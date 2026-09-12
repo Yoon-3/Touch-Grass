@@ -1,0 +1,6 @@
+# Copy this file to "local.properties" (Android Studio also writes sdk.dir there
+# automatically). Add your Gemini API key below - get one at
+# https://aistudio.google.com/apikey
+#
+# sdk.dir=/path/to/Android/sdk
+GEMINI_API_KEY=your_api_key_here
