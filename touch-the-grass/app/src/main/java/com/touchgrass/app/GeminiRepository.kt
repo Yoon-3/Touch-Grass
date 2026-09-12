@@ -35,6 +35,21 @@ object GeminiRepository {
             } else {
                 "\nThe previous mission was: \"$previousMission\". Give a different one this time.\n"
             }
+            // ponytail: prompt narrowed to a fixed indoor test mission for on-device
+            // testing. Restore the real prompt below when wiring up the actual app.
+            // val prompt = """
+            //     You are generating a single daily mission for an app that unlocks
+            //     only after the user goes outside and takes a specific photo.
+            //     Reply with ONE short imperative sentence in English describing an
+            //     easy, safe, universally achievable outdoor photo mission
+            //     (e.g. something involving the sky, a tree, grass, a sidewalk, a car,
+            //     a building, clouds). Do not add quotes, numbering, or any extra text.
+            //     Only output the mission sentence itself.
+            //     $avoidLine
+            //     Pick something different and unexpected each time you're asked -
+            //     vary the subject, angle, and phrasing rather than defaulting to the
+            //     most obvious answer.
+            // """.trimIndent()
             val prompt = """
                 Request a user to take a picture of a plastic bottle inside the room.
             """.trimIndent()
