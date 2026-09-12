@@ -1,0 +1,9 @@
+# Local config (contains API keys, SDK paths)
+local.properties
+touch-the-grass/local.properties
+
+# Gradle/build output
+.gradle/
+build/
+touch-the-grass/.gradle/
+touch-the-grass/app/build/

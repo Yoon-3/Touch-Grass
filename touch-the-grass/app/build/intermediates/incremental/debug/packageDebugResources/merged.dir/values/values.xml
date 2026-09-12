@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="accessibility_service_description">Detects when a blocked app is opened so Touch the Grass can lock it until today\'s mission is done.</string>
-    <string name="app_name">Touch the Grass</string>
-    <style name="Theme.TouchTheGrass" parent="android:Theme.Material.Light.NoActionBar"/>
-</resources>
