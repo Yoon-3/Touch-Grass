@@ -27,16 +27,16 @@ object GeminiRepository {
         "$BASE_URL/$MODEL:generateContent?key=${BuildConfig.GEMINI_API_KEY}"
 
     /** Asks Gemini for a single outdoor photo mission, as a plain English sentence. */
-    suspend fun generateMission(): Result<String> = withContext(Dispatchers.IO) {
+    suspend fun generateMission(previousMission: String? = null): Result<String> = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "generateMission: requesting new mission")
+            val avoidLine = if (previousMission.isNullOrBlank()) {
+                ""
+            } else {
+                "\nThe previous mission was: \"$previousMission\". Give a different one this time.\n"
+            }
             val prompt = """
-                You are generating a single daily mission for an app that unlocks
-                only after the user goes outside and takes a specific photo.
-                Reply with ONE short imperative sentence in English describing an
-                easy, safe, universally achievable outdoor photo mission
-                (e.g. something involving the sky, a tree, grass, a sidewalk, a car,
-                a building, clouds). Do not add quotes, numbering, or any extra text.
-                Only output the mission sentence itself.
+                Request a user to take a picture of a plastic bottle inside the room.
             """.trimIndent()
 
             val body = JSONObject().apply {
@@ -48,6 +48,11 @@ object GeminiRepository {
                             )
                         )
                     )
+                )
+                put(
+                    "generationConfig", JSONObject().apply {
+                        put("temperature", 1.3)
+                    }
                 )
             }
 
@@ -64,6 +69,7 @@ object GeminiRepository {
                 }
                 val text = extractText(raw)?.trim()
                     ?: return@withContext Result.failure(Exception("Empty mission response"))
+                Log.d(TAG, "generateMission: got \"$text\"")
                 Result.success(text)
             }
         } catch (e: Exception) {

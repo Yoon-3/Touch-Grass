@@ -1,5 +1,6 @@
 package com.touchgrass.app
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -43,6 +44,12 @@ class BlockOverlayActivity : ComponentActivity() {
 
     private var photoUri: Uri? = null
 
+    // singleTask means the activity instance (and its Compose composition) is
+    // reused across repeated blocks instead of recreated, so a plain
+    // LaunchedEffect(Unit) only ever runs once. Bump this on onNewIntent to
+    // force a fresh mission fetch each time the overlay is shown again.
+    private val refreshTrigger = mutableStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -57,17 +64,25 @@ class BlockOverlayActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        refreshTrigger.value++
+    }
+
     @Composable
     private fun OverlayScreen() {
         val scope = rememberCoroutineScope()
+        val trigger by refreshTrigger
         var mission by remember { mutableStateOf(AppStateManager.getMission(this)) }
         var status by remember { mutableStateOf("") }
         var isChecking by remember { mutableStateOf(false) }
 
         // Fetch a fresh mission from Gemini every time the block screen shows,
         // instead of reusing the same one until the next midnight reset.
-        LaunchedEffect(Unit) {
-            GeminiRepository.generateMission().onSuccess { newMission ->
+        LaunchedEffect(trigger) {
+            status = ""
+            GeminiRepository.generateMission(mission).onSuccess { newMission ->
                 mission = newMission
                 AppStateManager.setMission(this@BlockOverlayActivity, newMission)
             }
