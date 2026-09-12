@@ -87,11 +87,15 @@ object GeminiRepository {
             try {
                 val base64Image = Base64.encodeToString(jpegBytes, Base64.NO_WRAP)
 
+                // ponytail: "outdoors" requirement dropped for the indoor test mission.
+                // Restore it (see commented condition below) once the real outdoor
+                // mission prompt is back in generateMission().
+                // fulfills the mission and appears to be taken outdoors, right now,
                 val prompt = """
                     The user's mission was: "$missionText"
                     Look at the attached photo. Decide if it genuinely and plausibly
-                    fulfills the mission and appears to be taken outdoors, right now,
-                    by the user (not a screenshot, not a photo of a screen, not a
+                    fulfills the mission, taken right now by the user
+                    (not a screenshot, not a photo of a screen, not a
                     stock-looking image).
                     Reply with EXACTLY one word: APPROVE or REJECT. No other text.
                 """.trimIndent()
