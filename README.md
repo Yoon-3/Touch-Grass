@@ -8,7 +8,7 @@ API.
 
 1. **Setup** (`MainActivity`) - grant Accessibility Service, "display over
    other apps", and Camera permissions, then pick which apps to block.
-2. **Activate** - calls Gemini to generate today's mission (a short outdoor
+2. **Activate** - calls Gemini to generate a first mission (a short outdoor
    photo task), stores it, clears everyone's spent time, turns blocking on,
    and schedules a midnight alarm. Each blocked app gets its own daily time
    budget, 30 minutes by default, editable per app in the picker.
@@ -16,13 +16,17 @@ API.
    each blocked app spends in the foreground and launches
    `BlockOverlayActivity` full-screen over it once that app's budget runs
    out - immediately when you switch to an app that is already over, or via
-   a callback timed to the moment it runs out while you keep using it (back
-   button is disabled so the user can't peek behind it).
-4. On the overlay, the user taps **Take Photo**, the photo + mission text
-   are sent to Gemini (`GeminiRepository.verifyPhoto`), which replies
-   `APPROVE` or `REJECT`. Reject asks for another photo. Approve clears
-   that app's spent time, handing it a full budget again - except on a
-   0-minute limit, where there is no budget to hand back and clearing
+   a callback timed to the moment it runs out while you keep using it. Back
+   is swallowed and the screen is pinned (`startLockTask`), so Home and
+   Recents can't reach the app underneath either.
+4. Every time the overlay appears it asks Gemini for a fresh mission
+   instead of reusing the stored one, retrying client-side when Gemini
+   repeats an object already seen; **Can't do this? Reroll mission** asks
+   for another on demand. The user taps **Take Photo**, the photo +
+   mission text are sent to Gemini (`GeminiRepository.verifyPhoto`), which
+   replies `APPROVE` or `REJECT`. Reject asks for another photo. Approve
+   clears that app's spent time, handing it a full budget again - except
+   on a 0-minute limit, where there is no budget to hand back and clearing
    alone would re-block on the next foreground event, so the photo
    unlocks that app for the rest of the day instead.
 5. `MidnightResetReceiver` fires every night just after midnight, clears
@@ -86,10 +90,12 @@ app/src/main/java/com/touchgrass/app/
   MainActivity.kt                    - setup UI (permissions, app picker, activate)
   BlockOverlayActivity.kt            - full-screen lock + camera + verification UI
   TouchGrassAccessibilityService.kt  - detects blocked app coming to foreground
-  MidnightResetReceiver.kt + AlarmScheduler - daily reset
+  MidnightResetReceiver.kt           - daily reset (spent time + mission)
+  AlarmScheduler.kt                  - arms the next just-after-midnight alarm
   GeminiRepository.kt                - Gemini API calls (mission gen + photo verify)
-  AppStateManager.kt                 - SharedPreferences-backed state
+  AppStateManager.kt                 - SharedPreferences-backed state + todayString()
   TouchGrassApp.kt                   - Application + manual DI container
+  Theme.kt                           - the light colour scheme both screens use
 ```
 
 ## Licence
