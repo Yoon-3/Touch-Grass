@@ -1,13 +1,10 @@
 # Local config (contains API keys, SDK paths)
 local.properties
-touch-grass/local.properties
 
 # Gradle/build output
 .gradle/
 build/
-touch-grass/.gradle/
-touch-grass/app/build/
+app/build/
 
 # IDE settings
 .idea/
-touch-grass/.idea/
