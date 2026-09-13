@@ -51,6 +51,7 @@ import java.util.Locale
 
 enum class AppCategory(val label: String) {
     ALL("All"),
+    SELECTED("Selected"),
     GAMES("Games"),
     SOCIAL("Social"),
     TOOLS("Tools"),
@@ -118,11 +119,12 @@ class MainActivity : ComponentActivity() {
         var searchQuery by remember { mutableStateOf("") }
         var selectedCategory by remember { mutableStateOf(AppCategory.ALL) }
 
-        val filteredApps = remember(searchQuery, selectedCategory, allApps) {
+        val filteredApps = remember(searchQuery, selectedCategory, allApps, selectedApps) {
             allApps.filter { app ->
                 val matchesSearch = app.label.contains(searchQuery, ignoreCase = true)
                 val matchesCategory = when (selectedCategory) {
                     AppCategory.ALL -> true
+                    AppCategory.SELECTED -> selectedApps.contains(app.packageName)
                     else -> app.category == selectedCategory
                 }
                 matchesSearch && matchesCategory
