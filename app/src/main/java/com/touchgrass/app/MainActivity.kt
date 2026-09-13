@@ -45,9 +45,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 enum class AppCategory(val label: String) {
     ALL("All"),
@@ -70,12 +67,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme(
-                colorScheme = lightColorScheme(
-                    primary = Color(0xFF6750A4),
-                    background = Color(0xFFFBF8FF)
-                )
-            ) {
+            TouchGrassTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -114,7 +106,7 @@ class MainActivity : ComponentActivity() {
         val allApps = remember { loadLaunchableApps(context) }
         var selectedApps by remember { mutableStateOf(context.appState.getBlockedApps()) }
         var activated by remember { mutableStateOf(context.appState.isActivated()) }
-        var BlockingStatus by remember { mutableStateOf("") }
+        var blockingStatus by remember { mutableStateOf("") }
 
         var searchQuery by remember { mutableStateOf("") }
         var selectedCategory by remember { mutableStateOf(AppCategory.ALL) }
@@ -385,7 +377,7 @@ class MainActivity : ComponentActivity() {
                 enabled = readyToActivate && !activated,
                 onClick = {
                     scope.launch {
-                        BlockingStatus = "Requesting today's mission from Gemini..."
+                        blockingStatus = "Requesting today's mission from Gemini..."
                         val result = context.gemini.generateMission()
                         val mission = result.getOrElse { "Take a photo of the sky above you." }
                         context.appState.setMission(mission)
@@ -394,7 +386,7 @@ class MainActivity : ComponentActivity() {
                         context.appState.setActivated(true)
                         AlarmScheduler.scheduleMidnightAlarm(context)
                         activated = true
-                        BlockingStatus = "Blocking Activated!"
+                        blockingStatus = "Blocking Activated!"
                     }
                 },
                 shape = RoundedCornerShape(24.dp),
@@ -419,7 +411,7 @@ class MainActivity : ComponentActivity() {
                 onClick = {
                     context.appState.setActivated(false)
                     activated = false
-                    BlockingStatus = ""
+                    blockingStatus = ""
                 },
                 enabled = activated,
                 shape = RoundedCornerShape(24.dp),
@@ -435,7 +427,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            if (BlockingStatus.isNotBlank()) {
+            if (blockingStatus.isNotBlank()) {
                 Spacer(Modifier.height(12.dp))
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFECE6F0)),
@@ -452,7 +444,7 @@ class MainActivity : ComponentActivity() {
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            text = BlockingStatus,
+                            text = blockingStatus,
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = Color(0xFF1C1B1F),
                                 fontWeight = FontWeight.Medium
@@ -520,10 +512,6 @@ class MainActivity : ComponentActivity() {
             if (componentName != null && componentName == expectedComponent) return true
         }
         return false
-    }
-
-    private fun todayString(): String {
-        return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
     }
 
     private fun loadLaunchableApps(context: Context): List<InstalledApp> {

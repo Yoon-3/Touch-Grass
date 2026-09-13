@@ -18,7 +18,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -67,12 +66,7 @@ class BlockOverlayActivity : ComponentActivity() {
         startLockTask()
 
         setContent {
-            MaterialTheme(
-                colorScheme = lightColorScheme(
-                    primary = Color(0xFF6750A4),
-                    background = Color(0xFFFBF8FF)
-                )
-            ) {
+            TouchGrassTheme {
                 OverlayScreen()
             }
         }
