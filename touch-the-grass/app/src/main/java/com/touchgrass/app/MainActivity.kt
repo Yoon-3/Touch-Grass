@@ -316,7 +316,7 @@ class MainActivity : ComponentActivity() {
                                 value = minutesText,
                                 onValueChange = { text ->
                                     minutesText = text
-                                    text.toIntOrNull()?.takeIf { it > 0 }?.let {
+                                    text.toIntOrNull()?.takeIf { it >= 0 }?.let {
                                         AppStateManager.setTimeLimitMinutes(context, app.packageName, it)
                                     }
                                 },
