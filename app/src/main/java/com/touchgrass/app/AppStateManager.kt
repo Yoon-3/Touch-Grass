@@ -1,6 +1,7 @@
 package com.touchgrass.app
 
 import android.content.Context
+import java.time.LocalDate
 
 /**
  * Simple SharedPreferences-backed state store. Kept synchronous on purpose so
@@ -93,3 +94,9 @@ class AppStateManager(context: Context) {
         const val DEFAULT_TIME_LIMIT_MINUTES = 30
     }
 }
+
+/**
+ * Today's local date in the format [AppStateManager.getLastResetDate] stores.
+ * Lives here so the reset guard and the Activate button can't drift apart.
+ */
+fun todayString(): String = LocalDate.now().toString()
