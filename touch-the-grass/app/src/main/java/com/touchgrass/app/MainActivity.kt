@@ -54,7 +54,6 @@ enum class AppCategory(val label: String) {
     GAMES("Games"),
     SOCIAL("Social"),
     TOOLS("Tools"),
-    MEDIA("Media"),
     OTHERS("Others")
 }
 
