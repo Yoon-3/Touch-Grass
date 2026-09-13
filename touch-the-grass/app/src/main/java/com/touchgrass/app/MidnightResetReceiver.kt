@@ -18,7 +18,7 @@ class MidnightResetReceiver : BroadcastReceiver() {
             try {
                 AppStateManager.resetAllUsage(context)
                 val result = GeminiRepository.generateMission()
-                val mission = result.getOrElse { "Go outside and take a photo of the sky." }
+                val mission = result.getOrElse { "Take a photo of a bench." }
                 AppStateManager.setMission(context, mission)
                 AppStateManager.setLastResetDate(context, todayString())
             } finally {

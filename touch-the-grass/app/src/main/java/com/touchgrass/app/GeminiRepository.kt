@@ -27,23 +27,32 @@ object GeminiRepository {
         "$BASE_URL/$MODEL:generateContent?key=${BuildConfig.GEMINI_API_KEY}"
 
     /** Asks Gemini for a single outdoor photo mission, as a plain English sentence. */
-    suspend fun generateMission(previousMission: String? = null): Result<String> = withContext(Dispatchers.IO) {
+    suspend fun generateMission(previousMissions: List<String> = emptyList()): Result<String> = withContext(Dispatchers.IO) {
         try {
             Log.d(TAG, "generateMission: requesting new mission")
-            val avoidLine = if (previousMission.isNullOrBlank()) {
+            val avoidLine = if (previousMissions.isEmpty()) {
                 ""
             } else {
-                "\nThe previous mission was: \"$previousMission\". Give a different one this time.\n"
+                "CRITICAL: these objects were already used, you MUST pick a different " +
+                    "one, not a synonym or close variant of any of them: " +
+                    previousMissions.joinToString(" | ") { "\"$it\"" } + "\n\n"
             }
             val prompt = """
+                $avoidLine
                 You are generating a single daily mission for an app that unlocks
                 only after the user goes outside and takes a photo.
                 Reply with ONE short imperative sentence in English telling the user
-                to take a photo of a single common object they can find outside
+                to take a photo of a single common stationary thing they can
+                find outside. Vary the category each time - street furniture,
+                vehicles, signage, buildings/structures, yard items, fixtures,
+                and stationary plants/nature (trees, flowers, grass, bushes,
+                rocks), etc.
                 (e.g. "Take a photo of a chair.", "Take a photo of a car.",
-                "Take a photo of a plastic bottle."). Keep it to one simple,
-                easy-to-find object - nothing that requires a specific angle,
-                action, or multiple things in frame.
+                "Take a photo of a tree."). Keep it to one simple, easy-to-find,
+                fixed thing - nothing that requires a specific angle, action,
+                or multiple things in frame. Never pick an animal, person, or
+                anything that moves on its own - stationary plants (trees,
+                flowers, grass, bushes) and rocks are fine.
                 Do not add quotes, numbering, or any extra text.
                 Only output the mission sentence itself.
                 $avoidLine

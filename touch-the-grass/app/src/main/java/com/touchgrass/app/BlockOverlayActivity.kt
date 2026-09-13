@@ -22,6 +22,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -85,13 +86,29 @@ class BlockOverlayActivity : ComponentActivity() {
         val scope = rememberCoroutineScope()
         val trigger by refreshTrigger
         var mission by remember { mutableStateOf(AppStateManager.getMission(this)) }
+        val seenMissions = remember { mutableStateListOf<String>().apply { if (mission.isNotBlank()) add(mission) } }
         var status by remember { mutableStateOf("") }
         var isChecking by remember { mutableStateOf(false) }
         var isRerolling by remember { mutableStateOf(false) }
 
+        // Gemini's avoid-list instruction isn't always followed once the pool of
+        // easy indoor objects narrows, so retry client-side on an exact repeat.
         suspend fun fetchNewMission() {
-            GeminiRepository.generateMission(mission).onSuccess { newMission ->
+            var result: Result<String>? = null
+            repeat(8) {
+                val attempt = GeminiRepository.generateMission(seenMissions)
+                result = attempt
+                val newMission = attempt.getOrNull() ?: return@repeat
+                if (seenMissions.none { it.equals(newMission, ignoreCase = true) }) {
+                    mission = newMission
+                    seenMissions.add(newMission)
+                    AppStateManager.setMission(this@BlockOverlayActivity, newMission)
+                    return
+                }
+            }
+            result?.onSuccess { newMission ->
                 mission = newMission
+                seenMissions.add(newMission)
                 AppStateManager.setMission(this@BlockOverlayActivity, newMission)
             }
         }
@@ -158,7 +175,7 @@ class BlockOverlayActivity : ComponentActivity() {
             Text("Today's mission:", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             Text(
-                mission.ifBlank { "Go outside and take a photo of the sky." },
+                mission.ifBlank { "Take a photo of a bench." },
                 style = MaterialTheme.typography.bodyLarge
             )
             Spacer(Modifier.height(16.dp))
