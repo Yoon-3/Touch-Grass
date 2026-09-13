@@ -29,7 +29,13 @@ class GeminiRepository(
     /** Asks Gemini for a single outdoor photo mission, as a plain English sentence. */
     suspend fun generateMission(previousMissions: List<String> = emptyList()): Result<String> = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "generateMission: requesting new mission")
+            // The model is near-deterministic: the same prompt comes back with
+            // the same object every time, and neither temperature nor a "pick
+            // something different" instruction moves it. So variety has to come
+            // from here - each call hands it a randomly chosen category to work
+            // inside, which is what actually changes the answer.
+            val category = CATEGORIES.random()
+            Log.d(TAG, "generateMission: requesting new mission in \"$category\"")
             val avoidLine = if (previousMissions.isEmpty()) {
                 ""
             } else {
@@ -41,12 +47,10 @@ class GeminiRepository(
                 $avoidLine
                 You are generating a single daily mission for an app that unlocks
                 only after the user goes outside and takes a photo.
+                The mission subject MUST be in this category: $category.
                 Reply with ONE short imperative sentence in English telling the user
-                to take a photo of a single common stationary thing they can
-                find outside. Vary the category each time - street furniture,
-                vehicles, signage, buildings/structures, yard items, fixtures,
-                and stationary plants/nature (trees, flowers, grass, bushes,
-                rocks), etc.
+                to take a photo of a single common stationary thing from that
+                category they can find outside.
                 (e.g. "Take a photo of a chair.", "Take a photo of a car.",
                 "Take a photo of a tree."). Keep it to one simple, easy-to-find,
                 fixed thing - nothing that requires a specific angle, action,
@@ -56,7 +60,6 @@ class GeminiRepository(
                 Do not add quotes, numbering, or any extra text.
                 Only output the mission sentence itself.
                 $avoidLine
-                Pick a different object each time you're asked.
             """.trimIndent()
 
             val body = JSONObject().apply {
@@ -167,6 +170,20 @@ class GeminiRepository(
 
     companion object {
         private const val TAG = "GeminiRepository"
+
+        /** One is picked at random per call - see [generateMission]. */
+        private val CATEGORIES = listOf(
+            "street furniture (bench, bin, bollard, planter, bike rack)",
+            "a parked vehicle (car, bicycle, scooter, truck)",
+            "signage (street sign, shop sign, house number, notice board)",
+            "a building part or structure (wall, stairs, fence, gate, door, window)",
+            "a yard or porch item (mailbox, garden hose, doormat, garden ornament)",
+            "an outdoor fixture (streetlamp, fire hydrant, drain cover, utility box, traffic light)",
+            "a tree or bush",
+            "a flower, grass, or moss",
+            "the ground (paving stone, manhole cover, painted road marking, kerb, gravel)",
+            "a rock or stone"
+        )
         private const val MODEL = "gemini-3.5-flash-lite"
         private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
     }

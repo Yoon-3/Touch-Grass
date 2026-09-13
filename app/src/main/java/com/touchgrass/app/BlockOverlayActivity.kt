@@ -107,6 +107,9 @@ class BlockOverlayActivity : ComponentActivity() {
                 mission = newMission
                 seenMissions.add(newMission)
                 appState.setMission(newMission)
+            }?.onFailure {
+                // Silence here reads as a dead button - the mission just stays put.
+                status = "Couldn't reach Gemini. Mission unchanged - try again."
             }
         }
 
