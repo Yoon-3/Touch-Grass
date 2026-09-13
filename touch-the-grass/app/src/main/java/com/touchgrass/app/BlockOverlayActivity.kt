@@ -39,8 +39,9 @@ import java.io.File
 
 /**
  * Shown on top of any blocked app while the daily mission is incomplete.
- * Back button is disabled (moves task to home instead) so the user can't
- * peek at the blocked app behind it.
+ * Back press is swallowed (no-op), and screen pinning (startLockTask) keeps
+ * Home/Recents from escaping to the blocked app underneath. Unpinned again
+ * via stopLockTask once the mission photo is approved.
  */
 class BlockOverlayActivity : ComponentActivity() {
 
@@ -60,8 +61,10 @@ class BlockOverlayActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         onBackPressedDispatcher.addCallback(this) {
-            moveTaskToBack(true)
+            // Swallow back - do nothing, so the blocked app underneath is never revealed.
         }
+
+        startLockTask()
 
         setContent {
             MaterialTheme(
@@ -143,6 +146,7 @@ class BlockOverlayActivity : ComponentActivity() {
                                 AppStateManager.resetUsage(this@BlockOverlayActivity, packageName)
                             }
                             status = "Approved! Unlocking..."
+                            stopLockTask()
                             finish()
                         } else {
                             status = "Gemini says that doesn't match the mission. Try again!"

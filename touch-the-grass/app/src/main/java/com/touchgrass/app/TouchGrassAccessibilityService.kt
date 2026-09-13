@@ -24,7 +24,7 @@ class TouchGrassAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val packageName = event.packageName?.toString() ?: return
-        if (packageName == applicationContext.packageName || packageName == currentPackage) return
+        if (packageName == currentPackage) return
 
         endSession()
         currentPackage = packageName

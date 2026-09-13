@@ -307,6 +307,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Checkbox(
                             checked = isSelected,
+                            enabled = !activated,
                             onCheckedChange = { checked ->
                                 selectedApps = if (checked) {
                                     selectedApps + app.packageName
