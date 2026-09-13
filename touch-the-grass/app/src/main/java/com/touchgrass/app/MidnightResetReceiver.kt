@@ -16,11 +16,11 @@ class MidnightResetReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                AppStateManager.resetAllUsage(context)
-                val result = GeminiRepository.generateMission()
+                context.appState.resetAllUsage()
+                val result = context.gemini.generateMission()
                 val mission = result.getOrElse { "Take a photo of a bench." }
-                AppStateManager.setMission(context, mission)
-                AppStateManager.setLastResetDate(context, todayString())
+                context.appState.setMission(mission)
+                context.appState.setLastResetDate(todayString())
             } finally {
                 AlarmScheduler.scheduleMidnightAlarm(context)
                 pendingResult.finish()

@@ -30,12 +30,12 @@ class TouchGrassAccessibilityService : AccessibilityService() {
         currentPackage = packageName
         sessionStartElapsed = SystemClock.elapsedRealtime()
 
-        val isTracked = AppStateManager.isActivated(this) &&
-            AppStateManager.getBlockedApps(this).contains(packageName)
+        val isTracked = appState.isActivated() &&
+            appState.getBlockedApps().contains(packageName)
         if (!isTracked) return
 
-        val limitMillis = AppStateManager.getTimeLimitMinutes(this, packageName) * 60_000L
-        val remaining = limitMillis - AppStateManager.getUsageMillis(this, packageName)
+        val limitMillis = appState.getTimeLimitMinutes(packageName) * 60_000L
+        val remaining = limitMillis - appState.getUsageMillis(packageName)
 
         if (remaining <= 0) {
             showBlockOverlay(packageName)
@@ -51,9 +51,9 @@ class TouchGrassAccessibilityService : AccessibilityService() {
         pendingBlock?.let { handler.removeCallbacks(it) }
         pendingBlock = null
         val packageName = currentPackage ?: return
-        if (AppStateManager.isActivated(this) && AppStateManager.getBlockedApps(this).contains(packageName)) {
+        if (appState.isActivated() && appState.getBlockedApps().contains(packageName)) {
             val elapsed = SystemClock.elapsedRealtime() - sessionStartElapsed
-            AppStateManager.addUsageMillis(this, packageName, elapsed)
+            appState.addUsageMillis(packageName, elapsed)
         }
     }
 

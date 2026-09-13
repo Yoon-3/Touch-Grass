@@ -112,8 +112,8 @@ class MainActivity : ComponentActivity() {
         }
 
         val allApps = remember { loadLaunchableApps(context) }
-        var selectedApps by remember { mutableStateOf(AppStateManager.getBlockedApps(context)) }
-        var activated by remember { mutableStateOf(AppStateManager.isActivated(context)) }
+        var selectedApps by remember { mutableStateOf(context.appState.getBlockedApps()) }
+        var activated by remember { mutableStateOf(context.appState.isActivated()) }
         var BlockingStatus by remember { mutableStateOf("") }
 
         var searchQuery by remember { mutableStateOf("") }
@@ -316,7 +316,7 @@ class MainActivity : ComponentActivity() {
                                 } else {
                                     selectedApps - app.packageName
                                 }
-                                AppStateManager.setBlockedApps(context, selectedApps)
+                                context.appState.setBlockedApps(selectedApps)
                             },
                             colors = CheckboxDefaults.colors(
                                 checkedColor = Color(0xFF6750A4)
@@ -351,7 +351,7 @@ class MainActivity : ComponentActivity() {
                         if (isSelected) {
                             var minutesText by remember(app.packageName) {
                                 mutableStateOf(
-                                    AppStateManager.getTimeLimitMinutes(context, app.packageName).toString()
+                                    context.appState.getTimeLimitMinutes(app.packageName).toString()
                                 )
                             }
                             OutlinedTextField(
@@ -359,7 +359,7 @@ class MainActivity : ComponentActivity() {
                                 onValueChange = { text ->
                                     minutesText = text
                                     text.toIntOrNull()?.takeIf { it >= 0 }?.let {
-                                        AppStateManager.setTimeLimitMinutes(context, app.packageName, it)
+                                        context.appState.setTimeLimitMinutes(app.packageName, it)
                                     }
                                 },
                                 label = { Text("min", fontSize = 10.sp) },
@@ -386,12 +386,12 @@ class MainActivity : ComponentActivity() {
                 onClick = {
                     scope.launch {
                         BlockingStatus = "Requesting today's mission from Gemini..."
-                        val result = GeminiRepository.generateMission()
+                        val result = context.gemini.generateMission()
                         val mission = result.getOrElse { "Take a photo of the sky above you." }
-                        AppStateManager.setMission(context, mission)
-                        AppStateManager.setLastResetDate(context, todayString())
-                        AppStateManager.resetAllUsage(context)
-                        AppStateManager.setActivated(context, true)
+                        context.appState.setMission(mission)
+                        context.appState.setLastResetDate(todayString())
+                        context.appState.resetAllUsage()
+                        context.appState.setActivated(true)
                         AlarmScheduler.scheduleMidnightAlarm(context)
                         activated = true
                         BlockingStatus = "Blocking Activated!"
@@ -417,7 +417,7 @@ class MainActivity : ComponentActivity() {
 
             OutlinedButton(
                 onClick = {
-                    AppStateManager.setActivated(context, false)
+                    context.appState.setActivated(false)
                     activated = false
                     BlockingStatus = ""
                 },
