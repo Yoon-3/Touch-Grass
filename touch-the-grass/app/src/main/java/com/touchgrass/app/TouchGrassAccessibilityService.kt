@@ -33,6 +33,9 @@ class TouchGrassAccessibilityService : AccessibilityService() {
         val isTracked = appState.isActivated() &&
             appState.getBlockedApps().contains(packageName)
         if (!isTracked) return
+        // Already bought back with a photo today - leave it alone, or a
+        // 0-minute limit would re-block the instant the overlay closes.
+        if (appState.isUnlockedForToday(packageName)) return
 
         val limitMillis = appState.getTimeLimitMinutes(packageName) * 60_000L
         val remaining = limitMillis - appState.getUsageMillis(packageName)

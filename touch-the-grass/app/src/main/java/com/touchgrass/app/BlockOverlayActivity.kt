@@ -144,6 +144,12 @@ class BlockOverlayActivity : ComponentActivity() {
                             val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
                             if (packageName != null) {
                                 appState.resetUsage(packageName)
+                                // A 0-minute limit has no budget for the reset
+                                // to hand back, so the photo buys the rest of
+                                // the day instead of one more foreground event.
+                                if (appState.getTimeLimitMinutes(packageName) == 0) {
+                                    appState.setUnlockedForToday(packageName)
+                                }
                             }
                             status = "Approved! Unlocking..."
                             stopLockTask()

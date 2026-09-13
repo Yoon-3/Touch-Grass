@@ -58,9 +58,26 @@ class AppStateManager(context: Context) {
         prefs.edit().remove(KEY_USAGE_PREFIX + packageName).apply()
     }
 
+    /**
+     * True once [packageName] has been unlocked by a photo for the rest of the
+     * day. Only a 0-minute limit sets this: with no budget to spend down, a
+     * usage reset alone would leave the app blocked again on the next
+     * foreground event. Cleared by [resetAllUsage] at the next reset.
+     */
+    fun isUnlockedForToday(packageName: String): Boolean =
+        prefs.getBoolean(KEY_UNLOCKED_PREFIX + packageName, false)
+
+    fun setUnlockedForToday(packageName: String) {
+        prefs.edit().putBoolean(KEY_UNLOCKED_PREFIX + packageName, true).apply()
+    }
+
+    /** Starts a fresh day: clears banked usage and any one-time unlocks earned. */
     fun resetAllUsage() {
         val editor = prefs.edit()
-        getBlockedApps().forEach { editor.remove(KEY_USAGE_PREFIX + it) }
+        getBlockedApps().forEach {
+            editor.remove(KEY_USAGE_PREFIX + it)
+            editor.remove(KEY_UNLOCKED_PREFIX + it)
+        }
         editor.apply()
     }
 
@@ -72,6 +89,7 @@ class AppStateManager(context: Context) {
         private const val KEY_LAST_RESET_DATE = "last_reset_date"
         private const val KEY_LIMIT_PREFIX = "time_limit_minutes_"
         private const val KEY_USAGE_PREFIX = "usage_millis_"
+        private const val KEY_UNLOCKED_PREFIX = "unlocked_today_"
         const val DEFAULT_TIME_LIMIT_MINUTES = 30
     }
 }
