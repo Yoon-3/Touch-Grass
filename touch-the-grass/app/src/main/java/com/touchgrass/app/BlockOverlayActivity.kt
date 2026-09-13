@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -77,15 +78,20 @@ class BlockOverlayActivity : ComponentActivity() {
         var mission by remember { mutableStateOf(AppStateManager.getMission(this)) }
         var status by remember { mutableStateOf("") }
         var isChecking by remember { mutableStateOf(false) }
+        var isRerolling by remember { mutableStateOf(false) }
+
+        suspend fun fetchNewMission() {
+            GeminiRepository.generateMission(mission).onSuccess { newMission ->
+                mission = newMission
+                AppStateManager.setMission(this@BlockOverlayActivity, newMission)
+            }
+        }
 
         // Fetch a fresh mission from Gemini every time the block screen shows,
         // instead of reusing the same one until the next midnight reset.
         LaunchedEffect(trigger) {
             status = ""
-            GeminiRepository.generateMission(mission).onSuccess { newMission ->
-                mission = newMission
-                AppStateManager.setMission(this@BlockOverlayActivity, newMission)
-            }
+            fetchNewMission()
         }
 
         val takePictureLauncher = rememberLauncherForActivityResult(
@@ -139,9 +145,23 @@ class BlockOverlayActivity : ComponentActivity() {
                 mission.ifBlank { "Go outside and take a photo of the sky." },
                 style = MaterialTheme.typography.bodyLarge
             )
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(16.dp))
+            TextButton(
+                enabled = !isChecking && !isRerolling,
+                onClick = {
+                    isRerolling = true
+                    status = ""
+                    scope.launch {
+                        fetchNewMission()
+                        isRerolling = false
+                    }
+                }
+            ) {
+                Text(if (isRerolling) "Rerolling..." else "Can't do this? Reroll mission")
+            }
+            Spacer(Modifier.height(16.dp))
             Button(
-                enabled = !isChecking,
+                enabled = !isChecking && !isRerolling,
                 onClick = {
                     val uri = createImageUri()
                     photoUri = uri
