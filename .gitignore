@@ -7,3 +7,7 @@ touch-the-grass/local.properties
 build/
 touch-the-grass/.gradle/
 touch-the-grass/app/build/
+
+# IDE settings
+.idea/
+touch-the-grass/.idea/
