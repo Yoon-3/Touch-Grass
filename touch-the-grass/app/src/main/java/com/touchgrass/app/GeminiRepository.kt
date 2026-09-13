@@ -36,7 +36,17 @@ object GeminiRepository {
                 "\nThe previous mission was: \"$previousMission\". Give a different one this time.\n"
             }
             val prompt = """
-                Request a user to take a picture of a plastic bottle inside the room.
+                You are generating a single daily mission for an app that unlocks
+                only after the user goes outside and takes a specific photo.
+                Reply with ONE short imperative sentence in English describing an
+                easy, safe, universally achievable outdoor photo mission
+                (e.g. something involving the sky, a tree, grass, a sidewalk, a car,
+                a building, clouds). Do not add quotes, numbering, or any extra text.
+                Only output the mission sentence itself.
+                $avoidLine
+                Pick something different and unexpected each time you're asked -
+                vary the subject, angle, and phrasing rather than defaulting to the
+                most obvious answer.
             """.trimIndent()
 
             val body = JSONObject().apply {
@@ -87,15 +97,11 @@ object GeminiRepository {
             try {
                 val base64Image = Base64.encodeToString(jpegBytes, Base64.NO_WRAP)
 
-                // ponytail: "outdoors" requirement dropped for the indoor test mission.
-                // Restore it (see commented condition below) once the real outdoor
-                // mission prompt is back in generateMission().
-                // fulfills the mission and appears to be taken outdoors, right now,
                 val prompt = """
                     The user's mission was: "$missionText"
                     Look at the attached photo. Decide if it genuinely and plausibly
-                    fulfills the mission, taken right now by the user
-                    (not a screenshot, not a photo of a screen, not a
+                    fulfills the mission and appears to be taken outdoors, right now,
+                    by the user (not a screenshot, not a photo of a screen, not a
                     stock-looking image).
                     Reply with EXACTLY one word: APPROVE or REJECT. No other text.
                 """.trimIndent()
