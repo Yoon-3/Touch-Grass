@@ -96,7 +96,7 @@ app/src/main/java/com/touchgrass/app/
   AppStateManager.kt                 - SharedPreferences-backed state + todayString()
   TouchGrassApp.kt                   - Application + manual DI container
   Theme.kt                           - the light colour scheme both screens use
-```bgg
+```
 
 ## Licence
 
