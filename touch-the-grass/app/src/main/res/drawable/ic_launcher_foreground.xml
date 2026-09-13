@@ -1,0 +1,18 @@
+<!-- res/drawable/ic_launcher_foreground.xml -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+
+    <path
+        android:fillColor="#22C55E"
+        android:pathData="M54,32 C54,32 38,46 38,62 C38,70.8 45.2,78 54,78 C62.8,78 70,70.8 70,62 C70,46 54,32 54,32 Z" />
+    <path
+        android:fillColor="#4ADE80"
+        android:pathData="M54,32 C54,32 54,52 64,66 C67.8,61.4 70,55.2 70,48 C70,39.5 63.5,34.8 54,32 Z" />
+    <path
+        android:fillColor="#15803D"
+        android:pathData="M54,42 C54,42 42,54 42,65 C42,70.5 45.8,75 51,76.5 C48,72 48.5,65 54,58 L54,42 Z" />
+</vector>
