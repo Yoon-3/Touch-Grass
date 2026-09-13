@@ -114,7 +114,7 @@ class MainActivity : ComponentActivity() {
         val allApps = remember { loadLaunchableApps(context) }
         var selectedApps by remember { mutableStateOf(AppStateManager.getBlockedApps(context)) }
         var activated by remember { mutableStateOf(AppStateManager.isActivated(context)) }
-        var missionStatus by remember { mutableStateOf("") }
+        var BlockingStatus by remember { mutableStateOf("") }
 
         var searchQuery by remember { mutableStateOf("") }
         var selectedCategory by remember { mutableStateOf(AppCategory.ALL) }
@@ -385,7 +385,7 @@ class MainActivity : ComponentActivity() {
                 enabled = readyToActivate && !activated,
                 onClick = {
                     scope.launch {
-                        missionStatus = "Requesting today's mission from Gemini..."
+                        BlockingStatus = "Requesting today's mission from Gemini..."
                         val result = GeminiRepository.generateMission()
                         val mission = result.getOrElse { "Take a photo of the sky above you." }
                         AppStateManager.setMission(context, mission)
@@ -394,7 +394,7 @@ class MainActivity : ComponentActivity() {
                         AppStateManager.setActivated(context, true)
                         AlarmScheduler.scheduleMidnightAlarm(context)
                         activated = true
-                        missionStatus = "Activated! Mission: $mission"
+                        BlockingStatus = "Blocking Activated!"
                     }
                 },
                 shape = RoundedCornerShape(24.dp),
@@ -419,7 +419,7 @@ class MainActivity : ComponentActivity() {
                 onClick = {
                     AppStateManager.setActivated(context, false)
                     activated = false
-                    missionStatus = ""
+                    BlockingStatus = ""
                 },
                 enabled = activated,
                 shape = RoundedCornerShape(24.dp),
@@ -435,7 +435,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            if (missionStatus.isNotBlank()) {
+            if (BlockingStatus.isNotBlank()) {
                 Spacer(Modifier.height(12.dp))
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFECE6F0)),
@@ -452,7 +452,7 @@ class MainActivity : ComponentActivity() {
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            text = missionStatus,
+                            text = BlockingStatus,
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = Color(0xFF1C1B1F),
                                 fontWeight = FontWeight.Medium
