@@ -50,7 +50,7 @@ API.
   "new day" instead of waiting for real midnight.
 - Accessibility services can be disabled by the OS on low-RAM devices to
   save battery - if the lock stops triggering, check
-  Settings > Accessibility > Touch the Grass is still on.
+  Settings > Accessibility > Touch Grass is still on.
 - There's no photo-history or streak tracking yet - `AppStateManager`
   only tracks today's mission and lock state, which is enough for the
   core demo loop.

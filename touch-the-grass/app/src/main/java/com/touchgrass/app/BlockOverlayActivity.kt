@@ -131,7 +131,7 @@ class BlockOverlayActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Touch the Grass", style = MaterialTheme.typography.headlineMedium)
+            Text("Touch Grass", style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(16.dp))
             Text("Today's mission:", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))

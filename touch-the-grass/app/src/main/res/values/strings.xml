@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Touch the Grass</string>
-    <string name="accessibility_service_description">Detects when a blocked app is opened so Touch the Grass can lock it until today\'s mission is done.</string>
+    <string name="app_name">Touch Grass</string>
+    <string name="accessibility_service_description">Detects when a blocked app is opened so Touch Grass can lock it until today\'s mission is done.</string>
 </resources>

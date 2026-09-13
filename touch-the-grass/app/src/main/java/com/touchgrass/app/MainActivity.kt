@@ -106,6 +106,11 @@ class MainActivity : ComponentActivity() {
 
         val allPermissionsGranted = accessibilityGranted && overlayGranted && cameraGranted
 
+        var permissionsExpanded by remember { mutableStateOf(!allPermissionsGranted) }
+        LaunchedEffect(allPermissionsGranted) {
+            permissionsExpanded = !allPermissionsGranted
+        }
+
         val allApps = remember { loadLaunchableApps(context) }
         var selectedApps by remember { mutableStateOf(AppStateManager.getBlockedApps(context)) }
         var activated by remember { mutableStateOf(AppStateManager.isActivated(context)) }
@@ -150,7 +155,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 Text(text = "🌿 ", fontSize = 28.sp)
                 Text(
-                    text = "Touch the Grass",
+                    text = "Touch Grass",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 28.sp,
@@ -173,31 +178,66 @@ class MainActivity : ComponentActivity() {
                     .padding(bottom = 20.dp)
             ) {
                 Column(modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)) {
-                    PermissionRow(
-                        label = "Accessibility Service",
-                        granted = accessibilityGranted
-                    ) { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
-
-                    Spacer(Modifier.height(10.dp))
-
-                    PermissionRow(
-                        label = "Display over other apps",
-                        granted = overlayGranted
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = allPermissionsGranted) {
+                                permissionsExpanded = !permissionsExpanded
+                            }
                     ) {
-                        context.startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:${context.packageName}")
-                            )
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = if (allPermissionsGranted) Color(0xFF2E7D32) else Color(0xFF79747E),
+                            modifier = Modifier.size(18.dp)
                         )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = if (allPermissionsGranted) "All permissions granted" else "Permissions required",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = Color(0xFF1C1B1F),
+                                fontWeight = FontWeight.Medium
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (allPermissionsGranted) {
+                            Text(
+                                text = if (permissionsExpanded) "▲" else "▼",
+                                color = Color(0xFF49454F)
+                            )
+                        }
                     }
 
-                    Spacer(Modifier.height(10.dp))
+                    if (permissionsExpanded) {
+                        Spacer(Modifier.height(10.dp))
 
-                    PermissionRow(
-                        label = "Camera",
-                        granted = cameraGranted
-                    ) { cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA) }
+                        PermissionRow(
+                            label = "Accessibility Service",
+                            granted = accessibilityGranted
+                        ) { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        PermissionRow(
+                            label = "Display over other apps",
+                            granted = overlayGranted
+                        ) {
+                            context.startActivity(
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:${context.packageName}")
+                                )
+                            )
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        PermissionRow(
+                            label = "Camera",
+                            granted = cameraGranted
+                        ) { cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA) }
+                    }
                 }
             }
 
@@ -457,7 +497,7 @@ class MainActivity : ComponentActivity() {
             )
             Spacer(Modifier.width(4.dp))
             Text(
-                text = "Granted",
+                text = if (granted) "Granted" else "Not Granted",
                 style = MaterialTheme.typography.bodySmall.copy(
                     color = if (granted) Color(0xFF2E7D32) else Color(0xFF79747E),
                     fontWeight = FontWeight.Medium
