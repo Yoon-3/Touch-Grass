@@ -37,16 +37,17 @@ object GeminiRepository {
             }
             val prompt = """
                 You are generating a single daily mission for an app that unlocks
-                only after the user goes outside and takes a specific photo.
-                Reply with ONE short imperative sentence in English describing an
-                easy, safe, universally achievable outdoor photo mission
-                (e.g. something involving the sky, a tree, grass, a sidewalk, a car,
-                a building, clouds). Do not add quotes, numbering, or any extra text.
+                only after the user goes outside and takes a photo.
+                Reply with ONE short imperative sentence in English telling the user
+                to take a photo of a single common object they can find outside
+                (e.g. "Take a photo of a chair.", "Take a photo of a car.",
+                "Take a photo of a plastic bottle."). Keep it to one simple,
+                easy-to-find object - nothing that requires a specific angle,
+                action, or multiple things in frame.
+                Do not add quotes, numbering, or any extra text.
                 Only output the mission sentence itself.
                 $avoidLine
-                Pick something different and unexpected each time you're asked -
-                vary the subject, angle, and phrasing rather than defaulting to the
-                most obvious answer.
+                Pick a different object each time you're asked.
             """.trimIndent()
 
             val body = JSONObject().apply {
