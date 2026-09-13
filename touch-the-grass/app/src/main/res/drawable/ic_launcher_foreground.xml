@@ -1,18 +1,31 @@
-<!-- res/drawable/ic_launcher_foreground.xml -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-
-    <path
-        android:fillColor="#22C55E"
-        android:pathData="M54,32 C54,32 38,46 38,62 C38,70.8 45.2,78 54,78 C62.8,78 70,70.8 70,62 C70,46 54,32 54,32 Z" />
-    <path
-        android:fillColor="#4ADE80"
-        android:pathData="M54,32 C54,32 54,52 64,66 C67.8,61.4 70,55.2 70,48 C70,39.5 63.5,34.8 54,32 Z" />
+    <!-- 중앙 줄기 (Stem) -->
     <path
         android:fillColor="#15803D"
-        android:pathData="M54,42 C54,42 42,54 42,65 C42,70.5 45.8,75 51,76.5 C48,72 48.5,65 54,58 L54,42 Z" />
+        android:pathData="M52,42 C52,42 52,70 52,76 C52,77.1 52.9,78 54,78 C55.1,78 56,77.1 56,76 C56,70 56,42 56,42 Z" />
+
+    <!-- 왼쪽 아래 큰 잎 (Main Left Leaf) -->
+    <path
+        android:fillColor="#22C55E"
+        android:pathData="M54,60 C42,60 30,50 30,36 C42,36 54,46 54,60 Z" />
+
+    <!-- 오른쪽 아래 큰 잎 (Main Right Leaf) -->
+    <path
+        android:fillColor="#16A34A"
+        android:pathData="M54,60 C66,60 78,50 78,36 C66,36 54,46 54,60 Z" />
+
+    <!-- 중앙 상단 새순 (Top Center Leaf) -->
+    <path
+        android:fillColor="#4ADE80"
+        android:pathData="M54,28 C48,36 54,48 54,48 C54,48 60,36 54,28 Z" />
+
+    <!-- 하단 잔디 그라운드 베이스 (Minimal Grass Base) -->
+    <path
+        android:fillColor="#86EFAC"
+        android:pathData="M42,78 C42,78 48,74 54,74 C60,74 66,78 66,78 C66,78 60,76 54,76 C48,76 42,78 42,78 Z" />
 </vector>
