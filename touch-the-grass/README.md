@@ -20,8 +20,11 @@ API.
    button is disabled so the user can't peek behind it).
 4. On the overlay, the user taps **Take Photo**, the photo + mission text
    are sent to Gemini (`GeminiRepository.verifyPhoto`), which replies
-   `APPROVE` or `REJECT`. Approve clears that app's spent time, handing it
-   a full budget again; reject asks for another photo.
+   `APPROVE` or `REJECT`. Reject asks for another photo. Approve clears
+   that app's spent time, handing it a full budget again - except on a
+   0-minute limit, where there is no budget to hand back and clearing
+   alone would re-block on the next foreground event, so the photo
+   unlocks that app for the rest of the day instead.
 5. `MidnightResetReceiver` fires every night just after midnight, clears
    every blocked app's spent time budget and asks Gemini for a fresh
    mission. It also runs on `BOOT_COMPLETED`, because AlarmManager alarms
@@ -48,7 +51,9 @@ API.
 5. Open one of the blocked apps - the lock screen appears once that app's
    daily budget runs out. For a demo you don't want to wait 30 minutes for,
    set the app's **min** field to `0` before activating and the lock screen
-   comes up the moment you open it.
+   comes up the moment you open it. On a 0-minute limit one approved photo
+   unlocks that app for the rest of the day; the next midnight reset - or a
+   **Deactivate**/**Activate** cycle - locks it again.
 
 ## Known hackathon shortcuts / things to mention to judges
 
@@ -66,8 +71,9 @@ API.
   save battery - if the lock stops triggering, check
   Settings > Accessibility > Touch Grass is still on.
 - There's no photo-history or streak tracking yet - `AppStateManager`
-  only tracks today's mission plus each blocked app's time budget and
-  spent time, which is enough for the core demo loop.
+  only tracks today's mission, each blocked app's time budget and spent
+  time, and which apps a photo has already unlocked today, which is enough
+  for the core demo loop.
 - The mission-verification prompt is deliberately strict about "must look
   outdoors, not a screenshot" to reduce cheating with old photos, but
   Gemini's judgment isn't perfect - worth having a backup phone/photo
@@ -83,4 +89,5 @@ app/src/main/java/com/touchgrass/app/
   MidnightResetReceiver.kt + AlarmScheduler - daily reset
   GeminiRepository.kt                - Gemini API calls (mission gen + photo verify)
   AppStateManager.kt                 - SharedPreferences-backed state
+  TouchGrassApp.kt                   - Application + manual DI container
 ```
