@@ -12,19 +12,19 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
-object GeminiRepository {
-
-    private const val TAG = "GeminiRepository"
-    private const val MODEL = "gemini-3.5-flash-lite"
-    private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
-
-    private val client = OkHttpClient.Builder()
+/**
+ * Gemini calls. Built once by [TouchGrassApp]; reach it via `context.gemini`.
+ */
+class GeminiRepository(
+    private val apiKey: String,
+    private val client: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
+) {
 
     private fun endpoint(): String =
-        "$BASE_URL/$MODEL:generateContent?key=${BuildConfig.GEMINI_API_KEY}"
+        "$BASE_URL/$MODEL:generateContent?key=$apiKey"
 
     /** Asks Gemini for a single outdoor photo mission, as a plain English sentence. */
     suspend fun generateMission(previousMissions: List<String> = emptyList()): Result<String> = withContext(Dispatchers.IO) {
@@ -163,5 +163,11 @@ object GeminiRepository {
             Log.e(TAG, "Failed to parse Gemini response: $rawJson", e)
             null
         }
+    }
+
+    companion object {
+        private const val TAG = "GeminiRepository"
+        private const val MODEL = "gemini-3.5-flash-lite"
+        private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
     }
 }

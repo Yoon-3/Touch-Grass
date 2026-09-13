@@ -88,7 +88,7 @@ class BlockOverlayActivity : ComponentActivity() {
     private fun OverlayScreen() {
         val scope = rememberCoroutineScope()
         val trigger by refreshTrigger
-        var mission by remember { mutableStateOf(AppStateManager.getMission(this)) }
+        var mission by remember { mutableStateOf(appState.getMission()) }
         val seenMissions = remember { mutableStateListOf<String>().apply { if (mission.isNotBlank()) add(mission) } }
         var status by remember { mutableStateOf("") }
         var isChecking by remember { mutableStateOf(false) }
@@ -99,20 +99,20 @@ class BlockOverlayActivity : ComponentActivity() {
         suspend fun fetchNewMission() {
             var result: Result<String>? = null
             repeat(8) {
-                val attempt = GeminiRepository.generateMission(seenMissions)
+                val attempt = gemini.generateMission(seenMissions)
                 result = attempt
                 val newMission = attempt.getOrNull() ?: return@repeat
                 if (seenMissions.none { it.equals(newMission, ignoreCase = true) }) {
                     mission = newMission
                     seenMissions.add(newMission)
-                    AppStateManager.setMission(this@BlockOverlayActivity, newMission)
+                    appState.setMission(newMission)
                     return
                 }
             }
             result?.onSuccess { newMission ->
                 mission = newMission
                 seenMissions.add(newMission)
-                AppStateManager.setMission(this@BlockOverlayActivity, newMission)
+                appState.setMission(newMission)
             }
         }
 
@@ -137,13 +137,13 @@ class BlockOverlayActivity : ComponentActivity() {
                         isChecking = false
                         return@launch
                     }
-                    val result = GeminiRepository.verifyPhoto(mission, bytes)
+                    val result = gemini.verifyPhoto(mission, bytes)
                     isChecking = false
                     result.onSuccess { approved ->
                         if (approved) {
                             val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
                             if (packageName != null) {
-                                AppStateManager.resetUsage(this@BlockOverlayActivity, packageName)
+                                appState.resetUsage(packageName)
                             }
                             status = "Approved! Unlocking..."
                             stopLockTask()
