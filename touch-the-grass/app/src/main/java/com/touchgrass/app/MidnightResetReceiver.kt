@@ -10,17 +10,28 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-/** Fires once a day just after midnight: re-locks the app and asks Gemini for a new mission. */
+/**
+ * Starts a new day: clears every blocked app's spent time budget and asks
+ * Gemini for a fresh mission.
+ *
+ * Reached two ways - the midnight alarm, and BOOT_COMPLETED, since alarms don't
+ * survive a reboot and the chain would otherwise stay broken until the user
+ * re-activated by hand. Both paths run the same date-guarded rollover, so a
+ * reboot is harmless and a midnight missed while the phone was off (or whose
+ * alarm the OEM killed) still gets caught on the next delivery.
+ */
 class MidnightResetReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                context.appState.resetAllUsage()
-                val result = context.gemini.generateMission()
-                val mission = result.getOrElse { "Take a photo of a bench." }
-                context.appState.setMission(mission)
-                context.appState.setLastResetDate(todayString())
+                if (context.appState.getLastResetDate() != todayString()) {
+                    context.appState.resetAllUsage()
+                    val result = context.gemini.generateMission()
+                    val mission = result.getOrElse { "Take a photo of a bench." }
+                    context.appState.setMission(mission)
+                    context.appState.setLastResetDate(todayString())
+                }
             } finally {
                 AlarmScheduler.scheduleMidnightAlarm(context)
                 pendingResult.finish()
