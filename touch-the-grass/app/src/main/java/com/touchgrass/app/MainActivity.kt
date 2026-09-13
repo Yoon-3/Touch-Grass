@@ -533,20 +533,25 @@ class MainActivity : ComponentActivity() {
             .map { it.activityInfo }
             .filter { it.packageName != context.packageName }
             .distinctBy { it.packageName }
-            .map { info ->
-                val appInfo = pm.getApplicationInfo(info.packageName, 0)
-                val category = when (appInfo.category) {
-                    ApplicationInfo.CATEGORY_GAME -> AppCategory.GAMES
-                    ApplicationInfo.CATEGORY_SOCIAL, ApplicationInfo.CATEGORY_AUDIO, ApplicationInfo.CATEGORY_VIDEO -> AppCategory.SOCIAL
-                    ApplicationInfo.CATEGORY_PRODUCTIVITY, ApplicationInfo.CATEGORY_NEWS -> AppCategory.TOOLS
-                    else -> AppCategory.OTHERS
-                }
-                InstalledApp(
-                    packageName = info.packageName,
-                    label = info.loadLabel(pm).toString(),
-                    icon = info.loadIcon(pm),
-                    category = category
-                )
+            // A package can be uninstalled or replaced between the query above
+            // and these per-app lookups, and any of the three throws once it
+            // is gone. Drop that one app rather than lose the whole picker.
+            .mapNotNull { info ->
+                runCatching {
+                    val appInfo = pm.getApplicationInfo(info.packageName, 0)
+                    val category = when (appInfo.category) {
+                        ApplicationInfo.CATEGORY_GAME -> AppCategory.GAMES
+                        ApplicationInfo.CATEGORY_SOCIAL, ApplicationInfo.CATEGORY_AUDIO, ApplicationInfo.CATEGORY_VIDEO -> AppCategory.SOCIAL
+                        ApplicationInfo.CATEGORY_PRODUCTIVITY, ApplicationInfo.CATEGORY_NEWS -> AppCategory.TOOLS
+                        else -> AppCategory.OTHERS
+                    }
+                    InstalledApp(
+                        packageName = info.packageName,
+                        label = info.loadLabel(pm).toString(),
+                        icon = info.loadIcon(pm),
+                        category = category
+                    )
+                }.getOrNull()
             }
             .sortedBy { it.label.lowercase() }
     }
