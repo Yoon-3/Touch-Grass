@@ -9,18 +9,27 @@ API.
 1. **Setup** (`MainActivity`) - grant Accessibility Service, "display over
    other apps", and Camera permissions, then pick which apps to block.
 2. **Activate** - calls Gemini to generate today's mission (a short outdoor
-   photo task), stores it, sets the app to "locked", and schedules a
-   midnight alarm.
-3. While locked, `TouchGrassAccessibilityService` watches for any blocked
-   app coming to the foreground and immediately launches
-   `BlockOverlayActivity` full-screen on top of it (back button is disabled
-   so the user can't peek behind it).
+   photo task), stores it, clears everyone's spent time, turns blocking on,
+   and schedules a midnight alarm. Each blocked app gets its own daily time
+   budget, 30 minutes by default, editable per app in the picker.
+3. While blocking is on, `TouchGrassAccessibilityService` banks how long
+   each blocked app spends in the foreground and launches
+   `BlockOverlayActivity` full-screen over it once that app's budget runs
+   out - immediately when you switch to an app that is already over, or via
+   a callback timed to the moment it runs out while you keep using it (back
+   button is disabled so the user can't peek behind it).
 4. On the overlay, the user taps **Take Photo**, the photo + mission text
    are sent to Gemini (`GeminiRepository.verifyPhoto`), which replies
-   `APPROVE` or `REJECT`. Approve unlocks the app for the rest of the day;
-   reject asks for another photo.
-5. `MidnightResetReceiver` fires every night just after midnight, re-locks
-   the app, and asks Gemini for a fresh mission.
+   `APPROVE` or `REJECT`. Approve clears that app's spent time, handing it
+   a full budget again; reject asks for another photo.
+5. `MidnightResetReceiver` fires every night just after midnight, clears
+   every blocked app's spent time budget and asks Gemini for a fresh
+   mission. It also runs on `BOOT_COMPLETED`, because AlarmManager alarms
+   don't survive a reboot and the daily chain would otherwise stay broken
+   until the user re-activated by hand. Both paths share one guard on the
+   last reset date, so a same-day reboot only re-arms the alarm, and a
+   midnight missed while the phone was off is caught on the next delivery
+   instead of being lost.
 
 ## Setup
 
@@ -36,8 +45,10 @@ API.
    outside and take a photo.
 4. In the app: grant all three permissions, select a couple of apps to
    block (e.g. Instagram, YouTube), tap **Activate**.
-5. Open one of the blocked apps - the lock screen with the mission should
-   appear immediately.
+5. Open one of the blocked apps - the lock screen appears once that app's
+   daily budget runs out. For a demo you don't want to wait 30 minutes for,
+   set the app's **min** field to `0` before activating and the lock screen
+   comes up the moment you open it.
 
 ## Known hackathon shortcuts / things to mention to judges
 
@@ -45,15 +56,18 @@ API.
   In production this should go through a backend proxy so the key isn't
   bundled in the APK.
 - `SCHEDULE_EXACT_ALARM`/`USE_EXACT_ALARM` is declared, but some OEMs
-  (Samsung, Xiaomi, etc.) aggressively kill background alarms/services -
-  for the demo, use the **Deactivate**/**Activate** buttons to simulate a
-  "new day" instead of waiting for real midnight.
+  (Samsung, Xiaomi, etc.) aggressively kill background alarms/services. A
+  killed alarm no longer loses the day - the next `BOOT_COMPLETED` or
+  midnight delivery still sees a stale reset date and rolls over then - but
+  the rollover can land late. For the demo, use the **Deactivate**/
+  **Activate** buttons to simulate a "new day" instead of waiting for real
+  midnight.
 - Accessibility services can be disabled by the OS on low-RAM devices to
   save battery - if the lock stops triggering, check
   Settings > Accessibility > Touch Grass is still on.
 - There's no photo-history or streak tracking yet - `AppStateManager`
-  only tracks today's mission and lock state, which is enough for the
-  core demo loop.
+  only tracks today's mission plus each blocked app's time budget and
+  spent time, which is enough for the core demo loop.
 - The mission-verification prompt is deliberately strict about "must look
   outdoors, not a screenshot" to reduce cheating with old photos, but
   Gemini's judgment isn't perfect - worth having a backup phone/photo
